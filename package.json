@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "name": "ollama-web-search",
+  "version": "0.0.0",
+  "description": "Use ollama `web_search` api to search the web.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "^0.72.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  }
+}
