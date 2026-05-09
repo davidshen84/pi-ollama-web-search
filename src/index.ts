@@ -40,7 +40,7 @@ function loadConfig(pwd: string): OllamaWebSearchSettings {
       },
       ...settingsJson.ollamaWebSearchSettings,
     } as OllamaWebSearchSettings;
-  } catch (error) {
+  } catch {
     return { enabled: false } as OllamaWebSearchSettings;
   }
 }
