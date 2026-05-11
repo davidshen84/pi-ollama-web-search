@@ -14,14 +14,14 @@ type Settings = {
   ollamaWebSearchSettings?: OllamaWebSearchSettings;
 };
 
-type Result = {
+type SearchResult = {
   title: string;
   url: string;
   content: string;
 };
 
-type Response = {
-  results: Result[];
+type SearchResponse = {
+  results: SearchResult[];
 };
 
 function loadSettings(pwd: string): OllamaWebSearchSettings {
@@ -45,13 +45,17 @@ function loadSettings(pwd: string): OllamaWebSearchSettings {
   }
 }
 
+const maxContentSize = 1024 * 1024;
+
 async function doFetch(input: string, init?: RequestInit): Promise<globalThis.Response> {
-  try {
-    return await fetch(input, init);
-  } catch (error) {
-    console.error('Web fetch failed:', error);
-    throw error;
+  const response = await fetch(input, init);
+
+  const contentLength = response.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > maxContentSize) {
+    throw new Error(`Response content is too large: ${contentLength} bytes`);
   }
+
+  return response;
 }
 
 async function doWebSearch(
@@ -59,7 +63,7 @@ async function doWebSearch(
   query: string,
   maxResults?: number,
   signal?: AbortSignal,
-): Promise<Response> {
+): Promise<SearchResponse> {
   const response = await doFetch(`${settings.url}`, {
     method: 'POST',
     headers: {
@@ -80,12 +84,11 @@ async function doWebSearch(
     throw new Error(`Web search request failed with status ${response.status}: ${errorText}`);
   }
 
-  return (await response.json()) as Response;
+  return (await response.json()) as SearchResponse;
 }
 
 export default function (pi: ExtensionAPI) {
-  const pwd = process.cwd();
-  const settings = loadSettings(pwd);
+  const settings = loadSettings(process.cwd());
 
   pi.on('session_start', async (_, ctx: ExtensionContext) => {
     if (settings.enabled) {
